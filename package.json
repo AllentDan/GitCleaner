@@ -3,21 +3,30 @@
 	"displayName": "GitCleaner",
 	"description": "Auto clean unwanted files or directories that ignored by git.",
 	"version": "0.0.1",
+	"icon": "delete.png",
+	"license": "MIT",
 	"engines": {
 		"vscode": "^1.32.0"
 	},
 	"categories": [
 		"Other"
 	],
+	"keywords": [
+		"git",
+		"pycache",
+		"cache",
+		"clean",
+		"cleaner"
+	],
 	"activationEvents": [
-		"onCommand:gitcleaner.helloWorld"
+		"onCommand:gitcleaner.removePycache"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "gitcleaner.helloWorld",
-				"title": "Hello World"
+				"command": "gitcleaner.removePycache",
+				"title": "Remove Pycache"
 			}
 		]
 	},
