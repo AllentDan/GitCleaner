@@ -42,15 +42,14 @@ class GitCleaner {
 		return results;
 	}
 
-
 	public async delete_pycache(): Promise<GitCleaner> {
 		var projects = this.getProjectRoots();
 		if (projects == []) return this;
-		const edit = new vscode.WorkspaceEdit();
 		for (let i = 0; i < projects.length; i++) {
 			let targets = this.get_target_dir(projects[i], ['.pyc']);
 			targets.forEach(async function (el) {
 				console.log(el);
+				const edit = new vscode.WorkspaceEdit();
 				edit.deleteFile(vscode.Uri.parse(el), { recursive: true, ignoreIfNotExists: true });
 				await vscode.workspace.applyEdit(edit);
 			})
