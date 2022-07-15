@@ -1,10 +1,8 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-var exec = require('child-process-promise').exec;
-
+import * as vscode from 'vscode';
 
 class GitCleaner {
 	constructor() {
@@ -44,16 +42,20 @@ class GitCleaner {
 		return results;
 	}
 
-	public async delete_pycache() {
+
+	public async delete_pycache(): Promise<GitCleaner> {
 		var projects = this.getProjectRoots();
-		if (projects == []) return;
+		if (projects == []) return this;
+		const edit = new vscode.WorkspaceEdit();
 		for (let i = 0; i < projects.length; i++) {
 			let targets = this.get_target_dir(projects[i], ['.pyc']);
 			targets.forEach(async function (el) {
 				console.log(el);
-				var res = await exec(`rm -r ${el}`, { timeout: 999 });
+				edit.deleteFile(vscode.Uri.parse(el), { recursive: true, ignoreIfNotExists: true });
+				await vscode.workspace.applyEdit(edit);
 			})
 		}
+		return this;
 	}
 }
 
