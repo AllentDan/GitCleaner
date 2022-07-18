@@ -15,6 +15,18 @@ function get_single_parent_folder(dir: string): string {
 	}
 }
 
+	
+function folder_contains_only_pycache(folder: string[]) : boolean{
+	return folder.length == 1 && folder.indexOf('__pycache__') != -1;
+}
+
+async function delete_folder(dir: string) {
+	const result = get_single_parent_folder(dir);
+	const edit = new vscode.WorkspaceEdit();
+	edit.deleteFile(vscode.Uri.file(result), { recursive: true, ignoreIfNotExists: true });
+	await vscode.workspace.applyEdit(edit);
+}
+
 class GitCleaner {
 	constructor() {
 	}
@@ -32,26 +44,28 @@ class GitCleaner {
 
 		const tree = async function (target: string) {
 			const child = fs.readdirSync(target).filter(el => !el.startsWith('.'));
-			if (child.length == 1 && child.indexOf('__pycache__') != -1) {
-				const result = get_single_parent_folder(target);
-				console.log(result);
-				const edit = new vscode.WorkspaceEdit();
-				edit.deleteFile(vscode.Uri.parse(result), { recursive: true, ignoreIfNotExists: true });
-				await vscode.workspace.applyEdit(edit);
-			}
 			var direct: Array<string> = [];
 			child.forEach(function (el) {
-				const _dir = path.join(target, el);
-				const stat = fs.statSync(_dir);
+				const dir = path.join(target, el);
+				const stat = fs.statSync(dir);
 				if (!stat.isFile()) {
 					direct.push(el);
 				}
 			})
-			direct.forEach(function (el, i) {
-				const _dir = path.join(target, el);
-				tree(_dir);
-			})
-		}		
+			for(var i = 0; i < direct.length; i++) {
+				const dir = path.join(target, direct[i]);
+				const child_in_child = fs.readdirSync(dir).filter(el => !el.startsWith('.'));
+				if (folder_contains_only_pycache(child_in_child)) {
+					await delete_folder(dir);
+					continue;
+				}
+				tree(dir);
+			}
+			const new_child = fs.readdirSync(target).filter(el => !el.startsWith('.'));
+			if (folder_contains_only_pycache(new_child)) {
+				await delete_folder(target);
+			}
+		}
 		var projects = this.getProjectRoots();
 		if (projects == []) return this;
 		for (let i = 0; i < projects.length; i++) {
