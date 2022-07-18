@@ -28,46 +28,35 @@ class GitCleaner {
 		return projects;
 	}
 
-	private get_target_dir(dir: string, target_suffix: string[] = ['.pyc']) {
+	public async delete_pycache() {
 
-		const results: Array<string> = [];
-		const tree = function (target: string, deep: Array<boolean> = []) {
+		const tree = async function (target: string) {
 			const child = fs.readdirSync(target).filter(el => !el.startsWith('.'));
 			if (child.length == 1 && child.indexOf('__pycache__') != -1) {
-				const result = get_single_parent_folder(target)
-				results.push(result);
+				const result = get_single_parent_folder(target);
+				console.log(result);
+				const edit = new vscode.WorkspaceEdit();
+				edit.deleteFile(vscode.Uri.parse(result), { recursive: true, ignoreIfNotExists: true });
+				await vscode.workspace.applyEdit(edit);
 			}
 			var direct: Array<string> = [];
 			child.forEach(function (el) {
-				const dir = path.join(target, el);
-				const stat = fs.statSync(dir);
+				const _dir = path.join(target, el);
+				const stat = fs.statSync(_dir);
 				if (!stat.isFile()) {
 					direct.push(el);
 				}
 			})
 			direct.forEach(function (el, i) {
-				const dir = path.join(target, el);
-				tree(dir);
+				const _dir = path.join(target, el);
+				tree(_dir);
 			})
-		}
-		tree(dir);
-
-		return results;
-	}
-
-	public async delete_pycache(): Promise<GitCleaner> {
+		}		
 		var projects = this.getProjectRoots();
 		if (projects == []) return this;
 		for (let i = 0; i < projects.length; i++) {
-			let targets = this.get_target_dir(projects[i], ['.pyc']);
-			targets.forEach(async function (el) {
-				console.log(el);
-				const edit = new vscode.WorkspaceEdit();
-				edit.deleteFile(vscode.Uri.parse(el), { recursive: true, ignoreIfNotExists: true });
-				await vscode.workspace.applyEdit(edit);
-			})
+			tree(projects[i]);
 		}
-		return this;
 	}
 }
 
