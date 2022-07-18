@@ -16,8 +16,9 @@ function get_single_parent_folder(dir: string): string {
 }
 
 	
-function folder_contains_only_pycache(folder: string[]) : boolean{
-	return folder.length == 1 && folder.indexOf('__pycache__') != -1;
+function folder_contains_only_pycache(folder: string) : boolean{
+	const child = fs.readdirSync(folder).filter(el => !el.startsWith('.'));
+	return child.length == 1 && child.indexOf('__pycache__') != -1;
 }
 
 async function delete_folder(dir: string) {
@@ -54,15 +55,13 @@ class GitCleaner {
 			})
 			for(var i = 0; i < direct.length; i++) {
 				const dir = path.join(target, direct[i]);
-				const child_in_child = fs.readdirSync(dir).filter(el => !el.startsWith('.'));
-				if (folder_contains_only_pycache(child_in_child)) {
+				if (folder_contains_only_pycache(dir)) {
 					await delete_folder(dir);
 					continue;
 				}
 				tree(dir);
 			}
-			const new_child = fs.readdirSync(target).filter(el => !el.startsWith('.'));
-			if (folder_contains_only_pycache(new_child)) {
+			if (folder_contains_only_pycache(target)) {
 				await delete_folder(target);
 			}
 		}
