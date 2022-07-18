@@ -4,6 +4,17 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 
+
+function get_single_parent_folder(dir: string): string {
+	const parent = path.dirname(dir);
+	const child = fs.readdirSync(parent).filter(el => !el.startsWith('.'));
+	if (child.length == 1) {
+		return get_single_parent_folder(parent);
+	} else {
+		return dir;
+	}
+}
+
 class GitCleaner {
 	constructor() {
 	}
@@ -23,7 +34,8 @@ class GitCleaner {
 		const tree = function (target: string, deep: Array<boolean> = []) {
 			const child = fs.readdirSync(target).filter(el => !el.startsWith('.'));
 			if (child.length == 1 && child.indexOf('__pycache__') != -1) {
-				results.push(target);
+				const result = get_single_parent_folder(target)
+				results.push(result);
 			}
 			var direct: Array<string> = [];
 			child.forEach(function (el) {
@@ -38,7 +50,8 @@ class GitCleaner {
 				tree(dir);
 			})
 		}
-		tree(dir)
+		tree(dir);
+
 		return results;
 	}
 
@@ -80,5 +93,3 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(disposable);
 }
 
-// this method is called when your extension is deactivated
-export function deactivate() { }
