@@ -2,7 +2,7 @@
 	"name": "gitcleaner",
 	"displayName": "GitCleaner",
 	"description": "Auto clean unwanted files or directories that ignored by git.",
-	"version": "0.0.3",
+	"version": "0.0.5",
 	"icon": "delete.png",
 	"license": "MIT",
 	"publisher": "allent",
